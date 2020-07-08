@@ -9,9 +9,31 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
+## Overview
+This document is the final report of the Peer Assignment from the course Practical Machine Learning offered by JHU. It was built in RStudio using knitr function and published as html document.
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+## Background
+Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement – a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it. In this project, your goal will be to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways. More information is available from the website here: http://groupware.les.inf.puc-rio.br/har
+
+## Data
+The training data for this project are available here:
+
+https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv
+
+The test data are available here:
+
+https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv
+
+The data for this project come from this source: http://groupware.les.inf.puc-rio.br/har. 
+
+The following statements were made by the original authors of the dataset.
+
+Six young health participants were asked to perform one set of 10 repetitions of the Unilateral Dumbbell Biceps Curl in five different fashions: exactly according to the specification (Class A), throwing the elbows to the front (Class B), lifting the dumbbell only halfway (Class C), lowering the dumbbell only halfway (Class D) and throwing the hips to the front (Class E).
+
+Class A corresponds to the specified execution of the exercise, while the other 4 classes correspond to common mistakes. Participants were supervised by an experienced weight lifter to make sure the execution complied to the manner they were supposed to simulate. The exercises were performed by six male participants aged between 20-28 years, with little weight lifting experience. We made sure that all participants could easily simulate the mistakes in a safe and controlled manner by using a relatively light dumbbell (1.25kg).
+
+Source : Velloso, E.; Bulling, A.; Gellersen, H.; Ugulino, W.; Fuks, H. Qualitative Activity Recognition of Weight Lifting Exercises. Proceedings of 4th Augmented Human (AH) International Conference in cooperation with ACM SIGCHI (Augmented Human'13) . Stuttgart, Germany: ACM SIGCHI, 2013.
+
 
 ## Loading Required Libraries
 
@@ -62,7 +84,7 @@ The highly correlated variables are depicted in dark colors in the above plot. S
 
 Three methods are used for model building and the one with highest accuracy score will be applied to the testing data.
 
-## Random Forest
+# Random Forest
 ```{r}
 set.seed(12345)
 controlRF<-trainControl(method='cv',number=3,verboseIter=FALSE)
@@ -78,7 +100,7 @@ conmatRF
 ```{r echo=FALSE}
 plot(conmatRF$table,col=conmatRF$byClass,main=paste('Random forest - accuracy =',round(conmatRF$overall['Accuracy'],4)))
 ```
-## Decision Trees
+# Decision Trees
 ```{r}
 set.seed(12345)
 mdldtree<-rpart(classe~.,data=train_set,method='class')
@@ -92,7 +114,7 @@ conmatdtree
 ```{r echo=FALSE}
 plot(conmatdtree$table,col=conmatdtree$byClass,main=paste('Decision trees - accuracy =',round(conmatdtree$overall['Accuracy'],4)))
 ```
-## Generalized Boosting Method
+# Generalized Boosting Method
 ```{r}
 set.seed(12345)
 controlGBM<-trainControl(method='repeatedcv',number=5,repeats=1)
@@ -107,7 +129,7 @@ conmatGBM
 ```{r echo=FALSE}
 plot(conmatGBM$table,col=conmatGBM$byClass,main=paste('Random forest - accuracy =',round(conmatGBM$overall['Accuracy'],4)))
 ```
-## Applying Best model to Test Data
+# Applying Best model to Test Data
 
 The accuracy of the 3 regression models are -
 a) Random Forest : 0.9976

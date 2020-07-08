@@ -13,18 +13,114 @@ knitr::opts_chunk$set(echo = TRUE)
 
 This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+## Loading Required Libraries
 
-```{r cars}
-summary(cars)
+```{r}
+library(caret)
+library(rpart)
+library(rpart.plot)
+library(rattle)
+library(randomForest)
+library(corrplot)
+
 ```
 
-## Including Plots
+## Loading Dataset and cleaning
+We will be using the training data for analysis and testing data for answering quiz questions. Training data will be split into training and testing set in the ratio 70:30. Many columns have NAs which would be removed and the identity columns along with ID columns will be removed.
 
-You can also embed plots, for example:
+```{r}
+download.file('https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv',destfile='./training_set.csv',method='curl')
+download.file('https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv',destfile='./testing_set.csv',method='curl')
+train_dat<-read.csv('./training_set.csv')
+test_dat<-read.csv('./testing_set.csv')
+inTrain<-createDataPartition(y=train_dat$classe,p=0.7,list=FALSE)
+train_set<-train_dat[inTrain,]
+test_set<-train_dat[-inTrain,]
+NZV<-nearZeroVar(train_set)
+train_set<-train_set[,-NZV]
+test_set<-test_set[,-NZV]
+All_NA<-sapply(train_set,function(x) mean(is.na(x)))
+train_set<-train_set[,All_NA==FALSE]
+test_set<-test_set[,All_NA==FALSE]
+train_set<-train_set[,-(1:5)]
+test_set<-test_set[,-(1:5)]
 
-```{r pressure, echo=FALSE}
-plot(pressure)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+After cleaning cleaning process, both training and testing sets have 54 columns
+
+## Corelation
+Before creating prediction models, correlation is found among the variables
+```{r echo=FALSE}
+corMatrix<-cor(train_set[,-54])
+corrplot(corMatrix,order='FPC',method='color',type='lower',tl.cex=0.8,tl.col=rgb(0,0,0))
+
+```
+The highly correlated variables are depicted in dark colors in the above plot. Since, there are very few variables which are correlated strongly, PCA is not necessary to be performed as pre-processing step.
+
+## Prediction Model Building
+
+Three methods are used for model building and the one with highest accuracy score will be applied to the testing data.
+
+## Random Forest
+```{r}
+set.seed(12345)
+controlRF<-trainControl(method='cv',number=3,verboseIter=FALSE)
+mdlRF<-train(classe~.,data=train_set,method='rf',trControl=controlRF)
+mdlRF$finalModel
+```
+```{r}
+predRF<-predict(mdlRF,newdata=test_set)
+conmatRF<-confusionMatrix(predRF,as.factor(test_set$classe))
+conmatRF
+```
+
+```{r echo=FALSE}
+plot(conmatRF$table,col=conmatRF$byClass,main=paste('Random forest - accuracy =',round(conmatRF$overall['Accuracy'],4)))
+```
+## Decision Trees
+```{r}
+set.seed(12345)
+mdldtree<-rpart(classe~.,data=train_set,method='class')
+fancyRpartPlot(mdldtree)
+```
+```{r}
+preddtree<-predict(mdldtree,newdata=test_set,type='class')
+conmatdtree<-confusionMatrix(preddtree,as.factor(test_set$classe))
+conmatdtree
+```
+```{r echo=FALSE}
+plot(conmatdtree$table,col=conmatdtree$byClass,main=paste('Decision trees - accuracy =',round(conmatdtree$overall['Accuracy'],4)))
+```
+## Generalized Boosting Method
+```{r}
+set.seed(12345)
+controlGBM<-trainControl(method='repeatedcv',number=5,repeats=1)
+mdlGBM<-train(classe~.,data=train_set,method='gbm',trControl=controlGBM,verbose=FALSE)
+mdlGBM$finalModel
+```
+```{r}
+predGBM<-predict(mdlGBM,newdata=test_set)
+conmatGBM<-confusionMatrix(predGBM,as.factor(test_set$classe))
+conmatGBM
+```
+```{r echo=FALSE}
+plot(conmatGBM$table,col=conmatGBM$byClass,main=paste('Random forest - accuracy =',round(conmatGBM$overall['Accuracy'],4)))
+```
+## Applying Best model to Test Data
+
+The accuracy of the 3 regression models are -
+a) Random Forest : 0.9976
+b) Decision Trees : 0.7443
+c) Generalized Boosting Method : 0.9891
+
+So, the best model is random forest.
+
+```{r}
+predictTest<-predict(mdlRF,newdata=test_dat)
+predictTest
+```
+
+
+
+

@@ -38,16 +38,17 @@ Source : Velloso, E.; Bulling, A.; Gellersen, H.; Ugulino, W.; Fuks, H. Qualitat
 ## Loading Required Libraries
 
 ```{r}
-library(caret)
-library(rpart)
-library(rpart.plot)
-library(rattle)
-library(randomForest)
-library(corrplot)
+suppressPackageStartupMessages(library(caret)) 
+suppressPackageStartupMessages(library(rpart)) 
+suppressPackageStartupMessages(library(rpart.plot)) 
+suppressPackageStartupMessages(library(rattle))  
+suppressPackageStartupMessages(library(randomForest)) 
+suppressPackageStartupMessages(library(corrplot)) 
 
 ```
 
 ## Loading Dataset and cleaning
+
 We will be using the training data for analysis and testing data for answering quiz questions. Training data will be split into training and testing set in the ratio 70:30. Many columns have NAs which would be removed and the identity columns along with ID columns will be removed.
 
 ```{r}
@@ -72,64 +73,84 @@ test_set<-test_set[,-(1:5)]
 After cleaning cleaning process, both training and testing sets have 54 columns
 
 ## Corelation
+
 Before creating prediction models, correlation is found among the variables
+
 ```{r echo=FALSE}
 corMatrix<-cor(train_set[,-54])
 corrplot(corMatrix,order='FPC',method='color',type='lower',tl.cex=0.8,tl.col=rgb(0,0,0))
 
 ```
+
 The highly correlated variables are depicted in dark colors in the above plot. Since, there are very few variables which are correlated strongly, PCA is not necessary to be performed as pre-processing step.
 
 ## Prediction Model Building
 
 Three methods are used for model building and the one with highest accuracy score will be applied to the testing data.
 
-# Random Forest
-```{r}
+### Random Forest
+
+```{r comment=''}
 set.seed(12345)
 controlRF<-trainControl(method='cv',number=3,verboseIter=FALSE)
 mdlRF<-train(classe~.,data=train_set,method='rf',trControl=controlRF)
 mdlRF$finalModel
 ```
-```{r}
+
+
+```{r comment=''}
 predRF<-predict(mdlRF,newdata=test_set)
 conmatRF<-confusionMatrix(predRF,as.factor(test_set$classe))
 conmatRF
 ```
 
+
 ```{r echo=FALSE}
 plot(conmatRF$table,col=conmatRF$byClass,main=paste('Random forest - accuracy =',round(conmatRF$overall['Accuracy'],4)))
 ```
-# Decision Trees
+
+### Decision Trees
+
 ```{r}
 set.seed(12345)
 mdldtree<-rpart(classe~.,data=train_set,method='class')
 fancyRpartPlot(mdldtree)
 ```
+
+
 ```{r}
 preddtree<-predict(mdldtree,newdata=test_set,type='class')
 conmatdtree<-confusionMatrix(preddtree,as.factor(test_set$classe))
 conmatdtree
 ```
+
+
 ```{r echo=FALSE}
 plot(conmatdtree$table,col=conmatdtree$byClass,main=paste('Decision trees - accuracy =',round(conmatdtree$overall['Accuracy'],4)))
 ```
-# Generalized Boosting Method
-```{r}
+
+### Generalized Boosting Method
+
+```{r comment=''}
 set.seed(12345)
 controlGBM<-trainControl(method='repeatedcv',number=5,repeats=1)
 mdlGBM<-train(classe~.,data=train_set,method='gbm',trControl=controlGBM,verbose=FALSE)
 mdlGBM$finalModel
 ```
-```{r}
+
+
+```{r comment=''}
 predGBM<-predict(mdlGBM,newdata=test_set)
 conmatGBM<-confusionMatrix(predGBM,as.factor(test_set$classe))
 conmatGBM
 ```
+
+
 ```{r echo=FALSE}
 plot(conmatGBM$table,col=conmatGBM$byClass,main=paste('Random forest - accuracy =',round(conmatGBM$overall['Accuracy'],4)))
 ```
-# Applying Best model to Test Data
+
+## Applying Best model to Test Data
 
 The accuracy of the 3 regression models are -
 a) Random Forest : 0.9976
@@ -138,7 +159,7 @@ c) Generalized Boosting Method : 0.9891
 
 So, the best model is random forest.
 
-```{r}
+```{r comment=''}
 predictTest<-predict(mdlRF,newdata=test_dat)
 predictTest
 ```

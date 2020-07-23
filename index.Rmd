@@ -13,7 +13,11 @@ knitr::opts_chunk$set(echo = TRUE)
 This document is the final report of the Peer Assignment from the course Practical Machine Learning offered by JHU. It was built in RStudio using knitr function and published as html document.
 
 ## Background
-Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement – a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it. In this project, your goal will be to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways. More information is available from the website here: http://groupware.les.inf.puc-rio.br/har
+Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively.
+These type of devices are part of the quantified self movement – a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks.
+One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it.
+In this project, your goal will be to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants.
+They were asked to perform barbell lifts correctly and incorrectly in 5 different ways. More information is available from the website here: http://groupware.les.inf.puc-rio.br/har
 
 ## Data
 The training data for this project are available here:
@@ -28,9 +32,14 @@ The data for this project come from this source: http://groupware.les.inf.puc-ri
 
 The following statements were made by the original authors of the dataset.
 
-Six young health participants were asked to perform one set of 10 repetitions of the Unilateral Dumbbell Biceps Curl in five different fashions: exactly according to the specification (Class A), throwing the elbows to the front (Class B), lifting the dumbbell only halfway (Class C), lowering the dumbbell only halfway (Class D) and throwing the hips to the front (Class E).
+Six young health participants were asked to perform one set of 10 repetitions of the Unilateral Dumbbell Biceps Curl in five different fashions:
+exactly according to the specification (Class A), throwing the elbows to the front (Class B), lifting the dumbbell only halfway (Class C), 
+lowering the dumbbell only halfway (Class D) and throwing the hips to the front (Class E).
 
-Class A corresponds to the specified execution of the exercise, while the other 4 classes correspond to common mistakes. Participants were supervised by an experienced weight lifter to make sure the execution complied to the manner they were supposed to simulate. The exercises were performed by six male participants aged between 20-28 years, with little weight lifting experience. We made sure that all participants could easily simulate the mistakes in a safe and controlled manner by using a relatively light dumbbell (1.25kg).
+Class A corresponds to the specified execution of the exercise, while the other 4 classes correspond to common mistakes.
+Participants were supervised by an experienced weight lifter to make sure the execution complied to the manner they were supposed to simulate.
+The exercises were performed by six male participants aged between 20-28 years, with little weight lifting experience.
+We made sure that all participants could easily simulate the mistakes in a safe and controlled manner by using a relatively light dumbbell (1.25kg).
 
 Source : Velloso, E.; Bulling, A.; Gellersen, H.; Ugulino, W.; Fuks, H. Qualitative Activity Recognition of Weight Lifting Exercises. Proceedings of 4th Augmented Human (AH) International Conference in cooperation with ACM SIGCHI (Augmented Human'13) . Stuttgart, Germany: ACM SIGCHI, 2013.
 
@@ -49,7 +58,8 @@ suppressPackageStartupMessages(library(corrplot))
 
 ## Loading Dataset and cleaning
 
-We will be using the training data for analysis and testing data for answering quiz questions. Training data will be split into training and testing set in the ratio 70:30. Many columns have NAs which would be removed and the identity columns along with ID columns will be removed.
+We will be using the training data for analysis and testing data for answering quiz questions.
+Training data will be split into training and testing set in the ratio 70:30. Many columns have NAs which would be removed and the identity columns along with ID columns will be removed.
 
 ```{r}
 download.file('https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv',destfile='./training_set.csv',method='curl')
@@ -82,7 +92,8 @@ corrplot(corMatrix,order='FPC',method='color',type='lower',tl.cex=0.8,tl.col=rgb
 
 ```
 
-The highly correlated variables are depicted in dark colors in the above plot. Since, there are very few variables which are correlated strongly, PCA is not necessary to be performed as pre-processing step.
+The highly correlated variables are depicted in dark colors in the above plot.
+Since, there are very few variables which are correlated strongly, PCA is not necessary to be performed as pre-processing step.
 
 ## Prediction Model Building
 
@@ -118,7 +129,7 @@ fancyRpartPlot(mdldtree)
 ```
 
 
-```{r}
+```{r comment=''}
 preddtree<-predict(mdldtree,newdata=test_set,type='class')
 conmatdtree<-confusionMatrix(preddtree,as.factor(test_set$classe))
 conmatdtree
